@@ -1,9 +1,8 @@
 import streamlit as st
 from PIL import Image
 from io import BytesIO
-import requests
 
-# --- Stable Diffusion imports ---
+# ---------------- Stable Diffusion imports ----------------
 try:
     from diffusers import StableDiffusionPipeline
     import torch
@@ -13,11 +12,11 @@ except:
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="🎨 AI Image Generator", page_icon="✨", layout="centered")
 st.title("🎨 AI Image Generator")
-st.write("Generate images from text using **Stable Diffusion** (GPU) or **Craiyon** (CPU, fast)")
+st.write("Generate images from text using **Stable Diffusion GPU** or **CPU-friendly mini version**")
 
 st.markdown("---")
 
-# ---------------- Stable Diffusion Section ----------------
+# ---------------- Stable Diffusion GPU Section ----------------
 st.header("💎 Stable Diffusion (High Quality, GPU Required)")
 
 try:
@@ -41,28 +40,37 @@ try:
         else:
             st.warning("Please enter a prompt for Stable Diffusion.")
 except Exception as e:
-    st.warning("Stable Diffusion not available. Make sure 'diffusers' and 'torch' are installed and GPU is enabled.")
-    st.info("You can still use Craiyon (CPU-friendly) below.")
+    st.warning("Stable Diffusion GPU not available. Make sure 'diffusers' and 'torch' are installed and GPU is enabled.")
+    st.info("You can still use the CPU-friendly mini version below.")
 
 st.markdown("---")
 
-# ---------------- Craiyon Section ----------------
-st.header("🐱 Craiyon / DALL·E Mini (CPU, Fast)")
+# ---------------- CPU-Friendly Mini Section ----------------
+st.header("🐱 CPU-Friendly Stable Diffusion Mini (3 Images per Prompt)")
 
-craiyon_prompt = st.text_input("Enter prompt for Craiyon:", "A cat riding a skateboard", key="craiyon")
-if st.button("Generate Images (Craiyon)"):
-    if craiyon_prompt.strip():
-        with st.spinner("Generating images with Craiyon..."):
+cpu_prompt = st.text_input("Enter prompt for CPU-friendly generator:", "A cat making pizza", key="cpu")
+
+if st.button("Generate 3 Images (CPU Mini)"):
+    if cpu_prompt.strip():
+        with st.spinner("Generating CPU-friendly images..."):
             try:
-                res = requests.post("https://api.craiyon.com/v1", json={"prompt": craiyon_prompt})
-                images = res.json()["images"]
-                pil_images = [Image.open(BytesIO(bytes.fromhex(i))) for i in images[:3]]
-                st.image(pil_images, caption=["Result 1", "Result 2", "Result 3"], use_container_width=True)
-                st.success("✅ Craiyon images generated!")
+                from diffusers import StableDiffusionPipeline
+
+                # Use a smaller CPU-friendly model
+                model_id = "CompVis/stable-diffusion-v1-4"
+                pipe_cpu = StableDiffusionPipeline.from_pretrained(model_id)
+                pipe_cpu = pipe_cpu.to("cpu")
+
+                images = [pipe_cpu(cpu_prompt).images[0] for _ in range(3)]
+                st.image(images, caption=["Result 1", "Result 2", "Result 3"], use_container_width=True)
+
+                for idx, img in enumerate(images):
+                    img.save(f"cpu_image_{idx+1}.png")
+                st.success("✅ CPU-friendly images generated and saved!")
             except Exception as e:
-                st.error(f"Error generating Craiyon images: {e}")
+                st.error(f"Error generating CPU images: {e}")
     else:
-        st.warning("Please enter a prompt for Craiyon.")
+        st.warning("Please enter a prompt for CPU-friendly generation.")
 
 st.markdown("---")
-st.caption("Made with 💫 using Stable Diffusion + Craiyon + Streamlit")
+st.caption("Made with 💫 using Stable Diffusion + Streamlit (GPU & CPU)")
