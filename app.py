@@ -2,12 +2,12 @@ import streamlit as st
 from PIL import Image
 from io import BytesIO
 
-# ---------------- Stable Diffusion imports ----------------
+
 try:
     from diffusers import StableDiffusionPipeline
     import torch
 except:
-    pass  # If GPU model is not installed, Stable Diffusion section will be disabled
+    pass  
 
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="🎨 AI Image Generator", page_icon="✨", layout="centered")
@@ -16,7 +16,6 @@ st.write("Generate images from text using **Stable Diffusion GPU** or **CPU-frie
 
 st.markdown("---")
 
-# ---------------- Stable Diffusion GPU Section ----------------
 st.header("💎 Stable Diffusion (High Quality, GPU Required)")
 
 try:
@@ -45,7 +44,7 @@ except Exception as e:
 
 st.markdown("---")
 
-# ---------------- CPU-Friendly Mini Section ----------------
+
 st.header("🐱 CPU-Friendly Stable Diffusion Mini (3 Images per Prompt)")
 
 cpu_prompt = st.text_input("Enter prompt for CPU-friendly generator:", "A cat making pizza", key="cpu")
