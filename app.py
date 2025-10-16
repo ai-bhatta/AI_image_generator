@@ -4,33 +4,31 @@ from diffusers import StableDiffusionPipeline
 import torch
 import os
 
-
-st.set_page_config(page_title="🎨 Image Generator", page_icon="✨", layout="centered")
-st.title("🎨 AI Image Generator")
-st.write("Type a prompt to generate an image using Stable Diffusion — no API key needed!")
-
 # ----------------------------
-# MODEL LOADING
+# PAGE CONFIG
+# ----------------------------
+st.set_page_config(page_title="🎨 AI Image Generator", page_icon="✨", layout="centered")
+st.title("🎨 CPU-Friendly AI Image Generator")
+st.write("Generate images from text using a small Stable Diffusion model (CPU-compatible). No API keys needed!")
+
+# LOAD MODEL (CPU)
 # ----------------------------
 @st.cache_resource
 def load_model():
-    model_id = "CompVis/stable-diffusion-v1-4"
+    model_id = "stabilityai/stable-diffusion-2-base"
     pipe = StableDiffusionPipeline.from_pretrained(model_id)
-    pipe = pipe.to("cuda" if torch.cuda.is_available() else "cpu")
+    pipe = pipe.to("cpu")
     return pipe
 
 pipe = load_model()
 
-# ----------------------------
 # USER INPUT
 # ----------------------------
-prompt = st.text_input("🖊️ Enter a prompt:", placeholder="e.g., a cat making pizza")
+prompt = st.text_input("🖊️ Enter your prompt:", placeholder="e.g., A cat making pizza")
 
-generate_btn = st.button("✨ Generate Image")
-
-if generate_btn:
+if st.button("✨ Generate Image"):
     if prompt.strip():
-        with st.spinner("Generating your image... ⏳"):
+        with st.spinner("Generating image (CPU, may take ~30-60 seconds)... ⏳"):
             image = pipe(prompt).images[0]
             st.image(image, caption=f"Generated: {prompt}", use_container_width=True)
 
@@ -43,4 +41,4 @@ if generate_btn:
         st.warning("Please enter a prompt first!")
 
 st.markdown("---")
-st.caption("Made with 💫 Streamlit + Stable Diffusion")
+st.caption("Made with 💫 Streamlit + CPU-compatible Stable Diffusion")
